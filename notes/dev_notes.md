@@ -56,7 +56,7 @@ What follows is what information that I have been given related to the backend (
 
 **Before connecting to this API, see Scott to confirm that you are _ready.**
 
-The url of the REST API that stores the data is located at `https://journeyedu.herokuapp.com`.
+The url of the REST API that stores the data is located at `https://journeyedu.herokuapp.com`
 
 ### List of endpoints
 
