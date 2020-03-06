@@ -13,21 +13,19 @@ let newUser = {};
 
 const PORT = process.env.PORT || 8000;
 
-
-
-const getData = async () => {
-
-        const response = await request('https://journeyedu.herokuapp.com').then(res => {
-        return  JSON.parse(res)
-        }).then((herokuapp) => {
-            console.log(herokuapp);
-        }).catch(err => { console.log('Error: ', err);
-    throw new error(err)})
-    
+const getAvailability = async (currentFlight) => {
+    try {
+        const options = {
+            uri: `https://journeyedu.herokuapp.com/slingair/flights/${currentFlight}`,
+            headers: {
+                'Accept': 'application/json'
+            }
+        }
+        const obj = await request(options);
+        const parsedObj = JSON.parse(obj)
+        return parsedObj;
+    } catch (err) { console.log(err) }
 }
-
-getData();
-
 
 const handleFlightNumber = async (req, res) => {
     console.log(req.params);
@@ -35,11 +33,26 @@ const handleFlightNumber = async (req, res) => {
     console.log(currentFlight);
         
 
+    let answer = await getAvailability(currentFlight);
+        res.send({
+            flightInfo: answer[currentFlight]
+        })
+}
 
-    const getAvailability = async () => {
+const handleUser = (req, res) => {
+    newUser = req.body;
+    console.log(newUser);
+    res.send({
+        status: 'success'
+    })
+    // console.log(res);
+}
+
+const handleGetFlights = async (req, res) => {
+    const getFlights = async () => {
         try {
             const options = {
-                uri: `https://journeyedu.herokuapp.com/slingair/flights/${currentFlight}`,
+                uri: 'https://journeyedu.herokuapp.com/slingair/flights/',
                 headers: {
                     'Accept': 'application/json'
                 }
@@ -50,28 +63,16 @@ const handleFlightNumber = async (req, res) => {
         } catch (err) { console.log(err) }
     }
     
-    let answer = await getAvailability();
-
+    let answer = await getFlights();
+    console.log(answer);
 
         res.send({
-            flightInfo: answer
+            flights: answer
         })
     
 }
 
-// const handleSpecificFlight = (req, res) => {
 
-// }
-
-
-const handleUser = (req, res) => {
-    newUser = req.body;
-    console.log(newUser);
-    res.send({
-        status: 'success'
-    })
-    // console.log(res);
-}
 
 express()
     .use(function(req, res, next) {
@@ -86,9 +87,12 @@ express()
     
     // endpoints
 
+    
+    .get('/slingair/getTheFlight/flights', handleGetFlights)
     .get('/slingair/:flights', handleFlightNumber)
-    // .get('/slingair/:flights/:flight', handleSpecificFlight)
     .post('/slingair/user', handleUser)
+
+
 
     
     .use((req, res) => res.send('Not Found'))

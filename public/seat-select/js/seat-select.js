@@ -1,17 +1,26 @@
 const flightInput = document.getElementById('flight');
 const seatsDiv = document.getElementById('seats-section');
 const confirmButton = document.getElementById('confirm-button');
+const flightList = document.getElementById('flightList');
 
 const givenName = document.getElementById('givenName');
 const surname = document.getElementById('surname');
 const email = document.getElementById('email');
-console.log('email', email);
+
 
 
 let selection = '';
 
 const renderSeats = (seatInfo) => {
     document.querySelector('.form-container').style.display = 'block';
+    let row = document.getElementsByClassName('row');
+    console.log(row);
+    row = Array.from(row)
+    console.log(row)
+    row.forEach(item => {
+        console.log(item)
+        item.remove()
+    })
 
     const alpha = ['A', 'B', 'C', 'D', 'E', 'F'];
     for (let r = 1; r < 11; r++) {
@@ -28,7 +37,7 @@ const renderSeats = (seatInfo) => {
             const seatAvailable = `<li><label class="seat"><input type="radio" name="seat" value="${seatNumber}" /><span id="${seatNumber}" class="avail">${seatNumber}</span></label></li>`        
             let seatObject = {};
             // console.log(seatInfo.flightInfo);
-            console.log(seatInfo.flightInfo);
+            // console.log(seatInfo.flightInfo);
             seatInfo.flightInfo.forEach((seat)=> {
             if (seat.id === seatNumber) {
                 seatObject = seat;
@@ -61,13 +70,7 @@ const renderSeats = (seatInfo) => {
 }
 
 
-const toggleFormContent = (event) => {
-    const flightNumber = flightInput.value.toUpperCase();
-    console.log('toggleFormContent: ', flightNumber);
-    // TODO: contact the server to get the seating availability
-    //      - only contact the server if the flight number is this format 'SA###'.
-    //      - Do I need to create an error message if the number is not valid?
-    console.log(flightNumber);
+const toggleFormContent = (flightNumber) => {
     if (flightNumber.length > 5 || flightNumber[0] !== 'S' || flightNumber[1] !== 'A') {
         window.alert('error');
     }
@@ -87,14 +90,15 @@ const toggleFormContent = (event) => {
     
 }
 
+
 const handleConfirmSeat = (event) => {
     event.preventDefault();
     confirmButton.click(false);
     console.log(email.value);
     console.log(email);
-
+    console.log(flightList.value);
     const data = {
-        flight: flightInput.value,
+        flight: flightList.value,
         seat: selection,
         givenName: givenName.value,
         surname: surname.value,
@@ -115,13 +119,35 @@ const handleConfirmSeat = (event) => {
         return res.json()})
     .then(data => {
         console.log(data);
-        window.location.href = `/seat-select/confirmed.html?flight=${flightInput.value}&seat=${selection}&givenName=${givenName.value}&surname=${surname.value}&email=${email.value}`
+        window.location.href = `/seat-select/confirmed.html?flight=${flightList.value}&seat=${selection}&givenName=${givenName.value}&surname=${surname.value}&email=${email.value}`
     })
     
     .catch(error => console.log(error))
 }
 
+const getFlights = async () => {
+    
+    fetch(`/slingair/getTheFlight/flights`)
+        .then(data => {
+            // console.log(data);
+            return data.json();
+        })
+        .then(data => {
+            data.flights.flights.forEach((flightNumber)=>{
+                let option = document.createElement('option');
+                option.innerText = flightNumber;
+                option.value = flightNumber;
+                flightList.appendChild(option);
+            })
+        })
+        
+    
+    // TODO: Pass the response data to renderSeats to create the appropriate seat-type.
+    
+}
+getFlights();
 
 
 flightInput.addEventListener('blur', toggleFormContent);
+
 
